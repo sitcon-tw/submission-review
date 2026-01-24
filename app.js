@@ -52,6 +52,7 @@ function getSubmitFormData(arr)
 
 var vm;
 var FIELD_PREF_KEY = 'copyFieldsSelection';
+var DISPLAY_PREF_KEY = 'displayFieldsSelection';
 
 function buildMarkdown(fields, data) {
   return fields.filter(Boolean).map(function (field) {
@@ -107,9 +108,22 @@ function saveFieldPreference(fields) {
   localStorage.setItem(FIELD_PREF_KEY, JSON.stringify(fields));
 }
 
+function saveDisplayPreference(fields) {
+  localStorage.setItem(DISPLAY_PREF_KEY, JSON.stringify(fields));
+}
+
 function loadFieldPreference() {
   try {
     var raw = localStorage.getItem(FIELD_PREF_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function loadDisplayPreference() {
+  try {
+    var raw = localStorage.getItem(DISPLAY_PREF_KEY);
     return raw ? JSON.parse(raw) : null;
   } catch (e) {
     return null;
@@ -217,6 +231,7 @@ function runApp()
     },
     methods: {
       copyAsMarkdown: function () {
+        if (!this.fields || this.fields.length === 0) return;
         var markdown = buildMarkdown(this.fields, this.data);
         copyToClipboard(markdown).then(function () {
           showCopyFeedback('Copied submission');
@@ -224,13 +239,20 @@ function runApp()
       },
       copyFieldsAsMarkdown: function (evt) {
         var stored = loadFieldPreference();
+        var availableFields = this.fields;
+        if (!availableFields || availableFields.length === 0) return;
+        if (stored && stored.length > 0) {
+          stored = stored.filter(function (field) {
+            return availableFields.indexOf(field) !== -1;
+          });
+        }
         var preferStoredOnly = evt && (evt.ctrlKey || evt.metaKey);
         if (preferStoredOnly && stored && stored.length > 0) {
           this.copyWithFields(stored);
           return;
         }
         var self = this;
-        showFieldSelectorDialog(this.fields, stored || this.fields).then(function (selected) {
+        showFieldSelectorDialog(availableFields, stored || this.fields).then(function (selected) {
           if (selected && selected.length > 0) {
             saveFieldPreference(selected);
             self.copyWithFields(selected);
@@ -267,7 +289,9 @@ function runApp()
       return {
         db: [],
         fields: [],
-        state: 'NOFILE'
+        state: 'NOFILE',
+        selectedFields: [],
+        selectionInitialized: false
       }
     },
     created: function () {
@@ -282,13 +306,46 @@ function runApp()
       }
     },
     watch: {
+      fields: function () {
+        var stored = loadDisplayPreference();
+        if (Array.isArray(stored)) {
+          if (stored.length === 0) {
+            this.selectedFields = [];
+          } else {
+            var matching = this.fields.filter(function (field) {
+              return stored.indexOf(field) !== -1;
+            });
+            this.selectedFields = matching.length > 0 ? matching : this.fields.slice();
+          }
+        } else {
+          this.selectedFields = this.fields.slice();
+        }
+        this.selectionInitialized = true;
+      },
+      selectedFields: function (val) {
+        if (!this.selectionInitialized) return;
+        if (!this.fields || this.fields.length === 0) return;
+        saveDisplayPreference(val);
+      },
       db: function () {
         this.state = 'DONE'
+      }
+    },
+    computed: {
+      displayFields: function () {
+        if (!this.selectionInitialized) return this.fields;
+        return this.fields.filter(field => this.selectedFields.indexOf(field) !== -1);
       }
     },
     methods: {
       onUploadByButton(e) {
         loadFile(e.target.files[0])
+      },
+      selectAllFields() {
+        this.selectedFields = this.fields.slice();
+      },
+      clearSelectedFields() {
+        this.selectedFields = [];
       },
       changeTheme() {
         let preferredTheme = localStorage.getItem('theme');

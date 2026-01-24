@@ -27,6 +27,54 @@ body {
   padding-top: 2.4em;
 }
 
+.config-panel {
+  background: #eee;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+  padding: 18px 20px;
+  margin-bottom: 2em;
+  box-shadow: none;
+  transition: background 0.25s ease-in-out, box-shadow 0.25s ease-in-out;
+}
+
+.config-header {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.config-header h2 {
+  margin: 0 0 6px 0;
+  font-family: 'Poppins', 'Roboto', sans-serif;
+  font-size: 1.15rem;
+}
+
+.config-actions {
+  display: inline-flex;
+  gap: 8px;
+}
+
+.config-meta {
+  margin: 6px 0 12px 0;
+  font-size: 0.9rem;
+  color: #455a64;
+}
+
+.config-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 8px 12px;
+  max-height: 280px;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.empty-fields {
+  margin-bottom: 1.5em;
+}
+
 .data-actions {
   position: absolute;
   top: 10px;
@@ -137,6 +185,12 @@ body {
 
 .btn-icon.btn-ghost:hover {
   background: #e8f6f4;
+}
+
+.btn[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  pointer-events: none;
 }
 
 .modal-actions .btn {
@@ -269,6 +323,15 @@ input[type=file]::file-selector-button:hover {
     background-color: #ffffff14;
   }
 
+  .config-panel {
+    background-color: #ffffff14;
+    box-shadow: none;
+  }
+
+  .config-meta {
+    color: #b0bec5;
+  }
+
   .btn {
     background-color: #20b6a7;
     color: #212121;
@@ -282,6 +345,7 @@ input[type=file]::file-selector-button:hover {
   .btn-ghost {
     color: #4ec6ba;
     border: 1px solid #4ec6ba;
+    background: transparent;
   }
 
   .btn-ghost:hover {

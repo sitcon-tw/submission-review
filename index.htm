@@ -31,8 +31,33 @@
   <template id="t">
     <div class="container">
       <h1>SITCON Submissions Reviewing Tool</h1>
+
+      <section v-if="fields.length" class="config-panel">
+        <div class="config-header">
+          <div>
+            <h2>Display fields</h2>
+            <p class="text-muted small">Choose which fields appear in each submission. Updates instantly.</p>
+          </div>
+          <div class="config-actions">
+            <button type="button" class="btn btn-inline btn-ghost" @click="selectAllFields">Select all</button>
+            <button type="button" class="btn btn-inline btn-ghost" @click="clearSelectedFields">Clear</button>
+          </div>
+        </div>
+        <div class="config-meta">
+          Showing {{displayFields.length}} of {{fields.length}} fields
+        </div>
+        <div class="config-grid">
+          <label v-for="field in fields" v-if="field" class="checkbox-row">
+            <input type="checkbox" :value="field" v-model="selectedFields">
+            <span>{{field}}</span>
+          </label>
+        </div>
+      </section>
       
-      <data-view v-if="db.length > 0" v-for="data in db" :data="data" :fields="fields"></data-view>
+      <div v-if="db.length > 0 && displayFields.length === 0" class="empty-fields text-muted small">
+        No fields selected. Choose fields above to show submissions.
+      </div>
+      <data-view v-if="db.length > 0" v-for="data in db" :data="data" :fields="displayFields"></data-view>
       <div v-if="state === 'LOADING'">Loading...</div>
       <div v-if="state === 'NOFILE'">
         Please drag HTML file into this window or click the button below to upload.
@@ -80,10 +105,10 @@
   <template id="data-view">
     <div class="data">
       <div class="data-actions">
-        <button type="button" class="btn btn-inline btn-icon" @click="copyAsMarkdown" title="Copy as Markdown" aria-label="Copy as Markdown" data-tooltip="Copy as Markdown">
+        <button type="button" class="btn btn-inline btn-icon" @click="copyAsMarkdown" :disabled="!fields || fields.length === 0" title="Copy as Markdown" aria-label="Copy as Markdown" data-tooltip="Copy as Markdown">
           <span class="material-symbols-outlined">content_copy</span>
         </button>
-        <button type="button" class="btn btn-inline btn-icon btn-ghost" @click="copyFieldsAsMarkdown($event)" title="Copy selected fields as Markdown" aria-label="Copy fields as Markdown" data-tooltip="Copy selected fields">
+        <button type="button" class="btn btn-inline btn-icon btn-ghost" @click="copyFieldsAsMarkdown($event)" :disabled="!fields || fields.length === 0" title="Copy selected fields as Markdown" aria-label="Copy fields as Markdown" data-tooltip="Copy selected fields">
           <span class="material-symbols-outlined">checklist</span>
         </button>
       </div>
