@@ -52,7 +52,6 @@ function getSubmitFormData(arr)
 
 var vm;
 var FIELD_PREF_KEY = 'copyFieldsSelection';
-var DISPLAY_PREF_KEY = 'displayFieldsSelection';
 
 function buildMarkdown(fields, data) {
   return fields.filter(Boolean).map(function (field) {
@@ -108,9 +107,6 @@ function saveFieldPreference(fields) {
   localStorage.setItem(FIELD_PREF_KEY, JSON.stringify(fields));
 }
 
-function saveDisplayPreference(fields) {
-  localStorage.setItem(DISPLAY_PREF_KEY, JSON.stringify(fields));
-}
 
 function loadFieldPreference() {
   try {
@@ -121,14 +117,6 @@ function loadFieldPreference() {
   }
 }
 
-function loadDisplayPreference() {
-  try {
-    var raw = localStorage.getItem(DISPLAY_PREF_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch (e) {
-    return null;
-  }
-}
 
 function showFieldSelectorDialog(allFields, preselected) {
   return new Promise(function (resolve) {
@@ -290,8 +278,7 @@ function runApp()
         db: [],
         fields: [],
         state: 'NOFILE',
-        selectedFields: [],
-        selectionInitialized: false
+        selectedFields: []
       }
     },
     created: function () {
@@ -307,25 +294,7 @@ function runApp()
     },
     watch: {
       fields: function () {
-        var stored = loadDisplayPreference();
-        if (Array.isArray(stored)) {
-          if (stored.length === 0) {
-            this.selectedFields = [];
-          } else {
-            var matching = this.fields.filter(function (field) {
-              return stored.indexOf(field) !== -1;
-            });
-            this.selectedFields = matching.length > 0 ? matching : this.fields.slice();
-          }
-        } else {
-          this.selectedFields = this.fields.slice();
-        }
-        this.selectionInitialized = true;
-      },
-      selectedFields: function (val) {
-        if (!this.selectionInitialized) return;
-        if (!this.fields || this.fields.length === 0) return;
-        saveDisplayPreference(val);
+        this.selectedFields = this.fields.slice();
       },
       db: function () {
         this.state = 'DONE'
@@ -333,7 +302,6 @@ function runApp()
     },
     computed: {
       displayFields: function () {
-        if (!this.selectionInitialized) return this.fields;
         return this.fields.filter(field => this.selectedFields.indexOf(field) !== -1);
       }
     },
