@@ -50,7 +50,13 @@ function normalizeSkipRowsValue(value) {
 }
 
 function buildSheetData(parsed, skipRows) {
-  return parsed.rows.slice(normalizeSkipRowsValue(skipRows)).map(function (row) {
+  var rows = parsed.rows.slice(normalizeSkipRowsValue(skipRows));
+  while (rows.length > 0 && rows[rows.length - 1].every(function (cell) {
+    return !cell || !cell.trim();
+  })) {
+    rows.pop();
+  }
+  return rows.map(function (row) {
     return arrayToObject(parsed.fields, row);
   });
 }
